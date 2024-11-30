@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Generatore di Calendario Squadre</title>
+   <style>
+       body {
+           font-family: Arial, sans-serif;
+           padding: 20px;
+           background-color: #e9e9e9;
+           color: #333;
+           text-align: center;
+       }
+
+
+       h1 {
+           color: #229599;
+           font-size: 2em;
+           margin-bottom: 20px;
+           text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+       }
+
+       .button {
+           padding: 15px 25px;
+           background-color: #229599;
+           color: #fff;
+           border: none;
+           border-radius: 5px;
+           cursor: pointer;
+           font-size: 20px;
+           box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+           transition: background-color 0.3s ease, transform 0.2s ease;
+       }
+      
+       .button:hover {
+           background-color: #1c7c7f;
+           transform: translateY(-2px);
+       }
+       .button:active {
+           transform: translateY(1px);
+       }
+
+       #calendario {
+           margin-top: 30px;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+       }
+
+       .giornata {
+           margin: 15px 0;
+           width: 80%;
+           max-width: 600px;
+           padding: 10px;
+           border-radius: 8px;
+           background-color: #ffffff;
+           box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+           text-align: left;
+       }
+
+
+       .giornata h3 {
+           margin: 0 0 10px;
+           color: #229599;
+           font-size: 1.2em;
+           border-bottom: 1px solid #e0e0e0;
+           padding-bottom: 5px;
+           text-align: center;
+       }
+
+       .partita {
+           font-size: 1em;
+           padding: 5px 0;
+           color: #333;
+           text-align: center; 
+       }
+
+       .squadra {
+           font-weight: bold;
+       }
+   </style>
+</head>
+<body>
+
+
+   <h1>Generatore di Calendario per Squadre</h1>
+   <button class="button" onclick="generaCalendario()">Genera Calendario</button>
+
+
+   <div id="calendario"></div>
+
+
+   <script>
+       function generaNomeSquadra() {
+           const aggettivi = ["Rapid", "Dynamo", "Virtus", "Sporting", "Real", "Atletico", "Union", "Stella", "Aquila", "Olimpia"];
+           const sostantivi = ["Falcons", "Wolves", "Tigers", "Sharks", "Lions", "Eagles", "Panthers", "Dragons", "Thunder", "Pirates"];
+           const aggettivo = aggettivi[Math.floor(Math.random() * aggettivi.length)];
+           const sostantivo = sostantivi[Math.floor(Math.random() * sostantivi.length)];
+           return `${aggettivo} ${sostantivo}`;
+       }
+
+
+       const coloriDisponibili = [
+           "#FF5733", "#33FF57", "#3357FF", "#FF33A5", "#FF5733", "#33FFF1", "#9933FF",
+           "#FF3333", "#33FF99", "#5733FF", "#33A5FF", "#FF3399", "#3399FF", "#FF3357",
+           "#A533FF", "#FF3380", "#33FFCC", "#33FF77", "#FF3366"
+       ];
+
+       function generaSquadre(numSquadre) {
+           const squadre = [];
+           while (squadre.length < numSquadre) {
+               const nome = generaNomeSquadra();
+               if (!squadre.includes(nome)) {
+                   squadre.push(nome);
+               }
+           }
+           return squadre;
+       }
+
+       function generaCalendario() {
+           const squadre = generaSquadre(20);
+           const n = squadre.length;
+           const giornate = [];
+          
+           const coloriSquadre = {};
+           squadre.forEach((squadra, index) => {
+               coloriSquadre[squadra] = coloriDisponibili[index % coloriDisponibili.length];
+           });
+
+
+           for (let turno = 0; turno < n - 1; turno++) {
+               const partiteTurno = [];
+               for (let i = 0; i < Math.floor(n / 2); i++) {
+                   const squadraCasa = squadre[i];
+                   const squadraTrasferta = squadre[n - 1 - i];
+                   partiteTurno.push({casa: squadraCasa, trasferta: squadraTrasferta});
+               }
+               giornate.push(partiteTurno);
+               squadre.unshift(squadre.pop());
+           }
+
+
+           const gironeDiRitorno = giornate.map(giornata =>
+               giornata.map(partita => ({ casa: partita.trasferta, trasferta: partita.casa })));
+          
+           const calendario = [...giornate, ...gironeDiRitorno];
+           visualizzaCalendario(calendario, coloriSquadre);
+       }
+
+
+       function visualizzaCalendario(calendario, coloriSquadre) {
+           const calendarioDiv = document.getElementById('calendario');
+           calendarioDiv.innerHTML = '';
+
+
+           calendario.forEach((giornata, index) => {
+               const giornataDiv = document.createElement('div');
+               giornataDiv.classList.add('giornata');
+               const titolo = document.createElement('h3');
+               titolo.textContent = `Giornata ${index + 1}`;
+               giornataDiv.appendChild(titolo);
+
+
+               giornata.forEach(partita => {
+                   const partitaDiv = document.createElement('div');
+                   partitaDiv.classList.add('partita');
+                  
+                   const casaSpan = document.createElement('span');
+                   casaSpan.classList.add('squadra');
+                   casaSpan.textContent = partita.casa;
+                   casaSpan.style.color = coloriSquadre[partita.casa]; 
+
+
+                   const trasfertaSpan = document.createElement('span');
+                   trasfertaSpan.classList.add('squadra');
+                   trasfertaSpan.textContent = partita.trasferta;
+                   trasfertaSpan.style.color = coloriSquadre[partita.trasferta];
+
+
+                   partitaDiv.appendChild(casaSpan);
+                   partitaDiv.appendChild(document.createTextNode(' vs '));
+                   partitaDiv.appendChild(trasfertaSpan);
+
+
+                   giornataDiv.appendChild(partitaDiv);
+               });
+
+
+               calendarioDiv.appendChild(giornataDiv);
+           });
+       }
+   </script>
+</body>
+</html>
